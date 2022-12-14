@@ -25,14 +25,18 @@ async def get_book(id: int) -> typing.Optional[Model]:
         async with session.post("https://www1.9hentai.com/api/getBookByID", data={
             "id": id
         }) as response:
+            if response.status != 200:
+                return None
             res = await response.json()
             response = Model(**res)
             return response
 
+
 async def get_pages(id: int) -> typing.Optional[typing.List[str]]:
     book = await get_book(id)
     pages = []
-    if book:
-        pages.extend(f"{book.results.image_server}/{id}/{i}.jpg" for i in range(1, book.results.total_page + 1))
-
-    return pages 
+    if not book:
+        return None
+    pages.extend(
+        f"{book.results.image_server}/{id}/{i}.jpg" for i in range(1, book.results.total_page + 1))
+    return pages
